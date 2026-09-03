@@ -1,0 +1,2659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>📞 Hierarchical Call Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Login Page */
+        #loginPage {
+            display: block;
+            max-width: 420px;
+            margin: 50px auto;
+        }
+
+        .login-box {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-box h1 {
+            font-size: 26px;
+            color: #333;
+            text-align: center;
+        }
+
+        .login-box .subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-btn:hover {
+            opacity: 0.9;
+        }
+
+        .login-error {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .login-footer {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .login-footer small {
+            display: inline-block;
+            margin: 3px 8px;
+            background: #f8f9fa;
+            padding: 3px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .login-footer .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* App Page */
+        #appPage {
+            display: none;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h2 {
+            font-size: 18px;
+        }
+
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header .user-info span {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 15px;
+            background: white;
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow-x: auto;
+        }
+
+        .nav-tabs button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #6c757d;
+            flex: 1;
+            min-width: 60px;
+        }
+
+        .nav-tabs button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-tabs button.agent-hide {
+            display: none;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 14px 12px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-card h3 {
+            font-size: 22px;
+            color: #333;
+        }
+
+        .stat-card p {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .card h3 {
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .card h3 .badge {
+            background: #667eea;
+            color: white;
+            padding: 1px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            font-size: 11px;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 25px;
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .status-Pending {
+            background: #ffc107;
+            color: #212529;
+        }
+        .status-Calling {
+            background: #17a2b8;
+            color: white;
+            animation: blink 1s infinite;
+        }
+        .status-Completed {
+            background: #28a745;
+            color: white;
+        }
+        .status-Interested {
+            background: #28a745;
+            color: white;
+        }
+        .status-Not-Interested {
+            background: #dc3545;
+            color: white;
+        }
+        .status-Call-Back-Later {
+            background: #ffc107;
+            color: #212529;
+        }
+        .status-Wrong-Number {
+            background: #6c757d;
+            color: white;
+        }
+        .status-Not-Answered {
+            background: #fd7e14;
+            color: white;
+        }
+        .status-Called {
+            background: #28a745;
+            color: white;
+        }
+        .status-Assigned {
+            background: #17a2b8;
+            color: white;
+        }
+
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 5px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-call {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-call:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .btn-call:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-call.calling {
+            background: #17a2b8;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-sm {
+            padding: 3px 10px;
+            font-size: 10px;
+        }
+
+        .btn-block {
+            width: 100%;
+            padding: 10px;
+        }
+
+        .btn-response {
+            background: #007bff;
+            color: white;
+            padding: 3px 10px;
+            font-size: 10px;
+        }
+
+        .btn-response:hover {
+            background: #0056b3;
+        }
+
+        /* Phone link */
+        .phone-link {
+            color: #28a745;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background 0.3s;
+            display: inline-block;
+        }
+
+        .phone-link:hover {
+            background: #d4edda;
+            text-decoration: underline;
+        }
+
+        /* Upload */
+        .upload-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .upload-area input[type="file"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+            min-width: 140px;
+        }
+
+        .upload-status {
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .upload-status.success {
+            color: #155724;
+            background: #d4edda;
+        }
+        .upload-status.error {
+            color: #721c24;
+            background: #f8d7da;
+        }
+        .upload-status.info {
+            color: #0c5460;
+            background: #d1ecf1;
+        }
+
+        .upload-info {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .upload-info .green {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filters input,
+        .filters select {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        /* Performance */
+        .perf-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .perf-item .label {
+            width: 75px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .perf-bar {
+            flex: 1;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .perf-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .perf-item .value {
+            width: 35px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            max-width: 450px;
+            width: 92%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content .close {
+            float: right;
+            font-size: 26px;
+            cursor: pointer;
+            color: #aaa;
+            background: none;
+            border: none;
+        }
+
+        .modal-content .close:hover {
+            color: #333;
+        }
+
+        .modal-content h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .modal-content label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            margin: 10px 0 4px;
+            color: #495057;
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .modal-content textarea {
+            height: 60px;
+            resize: vertical;
+        }
+
+        .modal-content .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-content .form-row>* {
+            flex: 1;
+        }
+
+        #callerInfo {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        #callerInfo p {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+
+        #callerInfo .caller-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .call-status {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 12px 0;
+        }
+
+        .call-status.connecting {
+            background: #e3f2fd;
+            color: #004085;
+        }
+        .call-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .call-status.ended {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        .call-status.called {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        /* Profile */
+        .profile-info p {
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .profile-info .label {
+            font-weight: 600;
+            color: #495057;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 0 10px;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .bottom-nav button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            padding: 4px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 18px;
+        }
+
+        .bottom-nav button span {
+            font-size: 9px;
+            margin-top: 2px;
+        }
+
+        .bottom-nav button.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Table info */
+        .table-info {
+            font-size: 11px;
+            color: #6c757d;
+            padding: 6px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .table-info .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .phone-cell {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        /* Agent selector */
+        .agent-select {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            min-width: 130px;
+        }
+
+        /* Hierarchy indicator */
+        .hierarchy-badge {
+            font-size: 10px;
+            background: #e9ecef;
+            padding: 2px 10px;
+            border-radius: 12px;
+            color: #495057;
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            .stat-card {
+                padding: 10px 6px;
+            }
+
+            .stat-card h3 {
+                font-size: 18px;
+            }
+
+            .stat-card p {
+                font-size: 9px;
+            }
+
+            .header h2 {
+                font-size: 15px;
+            }
+
+            .header .user-info span {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
+
+            .login-box {
+                padding: 25px 20px;
+            }
+
+            body {
+                padding: 10px;
+                padding-bottom: 70px;
+            }
+
+            table {
+                font-size: 11px;
+                min-width: 350px;
+            }
+
+            th,
+            td {
+                padding: 5px 8px;
+            }
+
+            .modal-content .form-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (min-width: 481px) {
+            body {
+                background: #e8ecf1;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0 20px;
+            }
+
+            .bottom-nav {
+                max-width: 600px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 12px 12px 0 0;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .row-count {
+            font-size: 11px;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+
+        .refresh-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .refresh-btn:hover {
+            background: #138496;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        .admin-only.show {
+            display: block;
+        }
+
+        .admin-only-inline {
+            display: none;
+        }
+
+        .admin-only-inline.show {
+            display: inline-block;
+        }
+
+        .agent-only {
+            display: none;
+        }
+
+        .agent-only.show {
+            display: block;
+        }
+        .creator-only {
+            display: none;
+        }
+
+        .creator-only.show {
+            display: flex;
+        }
+
+        .dynamic-data-table {
+            min-width: max-content;
+        }
+
+        .dynamic-data-table th,
+        .dynamic-data-table td {
+            white-space: nowrap;
+        }
+
+    
+/* ===== MODERN HIERARCHY UI ===== */
+:root{--primary:#5b5ce2;--primary2:#7c3aed;--ink:#172033;--muted:#6b7280;--line:#e8eaf1;--surface:#fff;--bg:#f6f7fb;--success:#16a34a;--danger:#dc2626;--warning:#d97706}
+body{background:var(--bg);padding:0;color:var(--ink)}
+#appPage{min-height:100vh}
+.header{position:sticky;top:0;z-index:50;border-radius:0;margin:0;padding:14px 24px;background:rgba(255,255,255,.94);color:var(--ink);border-bottom:1px solid var(--line);box-shadow:0 4px 18px rgba(20,25,45,.05);backdrop-filter:blur(10px)}
+.header:before{content:'CALLFLOW';font-weight:900;letter-spacing:1.2px;font-size:17px;color:var(--primary)}
+.header .user-info{margin-left:auto!important;gap:8px}
+.header .user-info span{background:#f1f2ff!important;color:var(--ink);border:1px solid #e1e3ff;padding:6px 11px!important}
+.header .user-info span:first-child{font-weight:700}
+.logout-btn{background:#fff!important;color:var(--danger)!important;border:1px solid #fecaca!important;padding:7px 12px;border-radius:9px}
+.workspace{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:calc(100vh - 65px)}
+.side-nav{background:#111827;padding:18px 12px;display:flex;flex-direction:column;gap:5px;position:sticky;top:65px;height:calc(100vh - 65px);overflow:auto}
+.side-nav .nav-title{color:#9ca3af;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:10px 12px 7px}
+.side-nav button{border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%}
+.side-nav button:hover{background:#1f2937;color:#fff}.side-nav button.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 6px 16px rgba(91,92,226,.28)}
+.side-nav button span:first-child{width:22px;text-align:center}.side-nav button.creator-only:not(.show){display:none!important}
+.content-area{padding:22px;min-width:0}.content-area .tab-content{max-width:1500px;margin:0 auto}
+.card{border:1px solid var(--line);box-shadow:0 8px 24px rgba(24,32,55,.05);border-radius:16px!important;background:var(--surface)}
+.stats-grid{grid-template-columns:repeat(6,1fr);gap:12px}.stat-card{border:1px solid var(--line);border-radius:14px!important;box-shadow:none;background:#fff}
+.hierarchy-shell{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr);gap:16px}
+.hierarchy-tree{padding:8px}.tree-node{margin:7px 0}.tree-row{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}.tree-row:hover{border-color:#cfd2ff;background:#fafaff}.tree-children{margin-left:22px;padding-left:15px;border-left:2px solid #e5e7eb}.role-dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#9ca3af}.role-dot.admin{background:#7c3aed}.role-dot.agent{background:#2563eb}.role-dot.subagent{background:#16a34a}.tree-name{font-weight:800}.tree-meta{margin-left:auto;font-size:11px;color:var(--muted)}
+.team-actions{display:flex;gap:8px;flex-wrap:wrap}.report-actions{display:flex;gap:8px;flex-wrap:wrap}
+.report-card{background:linear-gradient(135deg,#fff,#f8f8ff);border:1px solid #dedfff}.report-card h3{margin-bottom:7px}
+.table-wrap{border-radius:12px;border:1px solid var(--line)}table{min-width:760px}th{background:#f8f9fc;color:#4b5563;font-size:11px;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0;z-index:2}td{font-size:12px}
+.dynamic-data-table{min-width:1200px}.dynamic-data-table th,.dynamic-data-table td{white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.bottom-nav{display:none!important}
+@media(max-width:900px){.workspace{grid-template-columns:1fr}.side-nav{position:sticky;top:65px;height:auto;z-index:40;flex-direction:row;overflow-x:auto;padding:8px;background:#111827}.side-nav .nav-title{display:none}.side-nav button{width:auto;min-width:max-content;padding:9px 12px}.content-area{padding:12px}.stats-grid{grid-template-columns:repeat(3,1fr)}.hierarchy-shell{grid-template-columns:1fr}.header{padding:11px 13px}.header:before{font-size:14px}.header .user-info{gap:5px}.header .user-info span{font-size:11px!important;padding:5px 7px!important}.logout-btn{font-size:11px}}
+@media(max-width:520px){.stats-grid{grid-template-columns:repeat(2,1fr)}.header .user-info span:nth-child(3){display:none}.content-area{padding:8px}.card{padding:12px!important}.side-nav button{font-size:11px}}
+
+
+        /* CallFlow modern responsive shell */
+        .modern-header{display:flex;align-items:center;justify-content:space-between;gap:18px;background:rgba(255,255,255,.96);border:1px solid #e6e9f0;border-radius:18px;padding:12px 16px;position:sticky;top:8px;z-index:200;box-shadow:0 8px 28px rgba(25,35,60,.07);margin-bottom:9px}.brand-area{display:flex;align-items:center;gap:10px}.brand-mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#5b6ee1,#7c4db5);color:#fff;font-weight:800}.brand-name{font-size:17px;font-weight:800;color:#1d2535}.brand-sub{font-size:10px;color:#8992a3;margin-top:2px}.header-user{display:flex;align-items:center;gap:9px}.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#eef0ff;color:#5968d9;font-weight:800}.user-copy{display:flex;flex-direction:column;line-height:1.15}.user-copy strong{font-size:13px}.user-copy span{font-size:10px;color:#7d8798;margin-top:3px}.device-badge{font-size:10px;padding:6px 9px;border-radius:999px;white-space:nowrap;background:#f0f2f6;color:#657083}.device-badge.mobile{background:#eaf8ef;color:#148348}.logout-btn{border:1px solid #e3e7ee;background:#fff;color:#4d586b;border-radius:10px;padding:8px 11px;font-size:12px;font-weight:700;cursor:pointer}.top-nav{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid #e6e9f0;border-radius:15px;padding:5px;position:sticky;top:72px;z-index:190;overflow-x:auto;scrollbar-width:none;margin-bottom:16px;box-shadow:0 5px 18px rgba(25,35,60,.05)}.top-nav::-webkit-scrollbar{display:none}.top-nav button{border:0;background:transparent;color:#697487;padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:6px}.top-nav button.active{background:#eef0ff;color:#5667d8;box-shadow:inset 0 0 0 1px #e0e3ff}.top-nav .creator-only,.top-nav .admin-agent-only{display:none}.top-nav .creator-only.show,.top-nav .admin-agent-only.show{display:flex}.call-action:disabled{opacity:.5;cursor:not-allowed}.smart-hint{font-size:11px;color:#687386;background:#f6f8fb;border:1px dashed #dfe4ed;border-radius:10px;padding:9px 11px;margin:4px 0 12px}
+        @media(max-width:700px){body{padding:7px 7px 15px}.modern-header{top:5px;padding:9px 10px;border-radius:15px}.brand-mark{width:36px;height:36px}.brand-sub{display:none}.brand-name{font-size:15px}.user-copy{display:none}.device-badge{font-size:9px}.logout-btn{padding:7px 9px}.top-nav{top:61px;margin-bottom:10px;border-radius:12px}.top-nav button{padding:8px 11px;font-size:11px}.stats-grid{grid-template-columns:repeat(2,1fr)!important}.form-row{flex-direction:column!important}.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.table-wrap table{min-width:max-content}.modal-content{width:calc(100% - 20px)!important;max-height:90vh;overflow:auto}}
+        @media(min-width:701px){.call-action{pointer-events:none}}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ============================================ -->
+        <!-- LOGIN PAGE -->
+        <!-- ============================================ -->
+        <div id="loginPage">
+            <div class="login-box">
+                <h1>📞 Hierarchical Call Management</h1>
+                <p class="subtitle">Login to your dashboard</p>
+
+                <form id="loginForm" onsubmit="return handleLogin(event)">
+                    <div class="form-group">
+                        <label>👤 User ID</label>
+                        <input type="text" id="loginId" placeholder="Enter your user ID" required value="" />
+                    </div>
+                    <div class="form-group">
+                        <label>🔒 Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required value="" />
+                    </div>
+                    <button type="submit" class="login-btn">🚀 Login</button>
+                    <div id="loginError" class="login-error"></div>
+                </form>
+
+                <div class="login-footer"><p>🔐 <strong>Secure hierarchy login</strong></p><small>Admin creates Agents • Agents create Sub-Agents</small></div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- APP PAGE -->
+        <!-- ============================================ -->
+        <div id="appPage">
+
+            <header class="modern-header">
+                <div class="brand-area"><div class="brand-mark">CF</div><div><div class="brand-name">CallFlow</div><div class="brand-sub">Hierarchy Workspace</div></div></div>
+                <div class="header-user"><div class="avatar" id="userAvatar">U</div><div class="user-copy"><strong id="userName">User</strong><span id="userRole">Admin</span></div><span class="device-badge" id="deviceBadge">Desktop • View mode</span><button class="logout-btn" onclick="logout()">Logout</button></div>
+            </header>
+            <nav class="top-nav" id="topNav">
+                <button class="active" data-tab="dashboard"><span>⌂</span>Dashboard</button>
+                <button data-tab="upload" class="admin-agent-only"><span>↑</span>Upload</button>
+                <button data-tab="assign" class="admin-agent-only"><span>⇄</span>Assign</button>
+                <button data-tab="subagents" class="creator-only"><span>♧</span>Hierarchy</button>
+                <button data-tab="calls"><span>☎</span>Calls</button>
+                <button data-tab="history"><span>▤</span>History</button>
+                <button data-tab="reports"><span>↗</span>Reports</button>
+                <button data-tab="profile"><span>⚙</span>Profile</button>
+            </nav>
+            <main class="content-area">
+
+            <!-- ======== TAB: DASHBOARD ======== -->
+            <div class="tab-content active" id="tab-dashboard">
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card"><h3 id="totalCount">0</h3><p>📋 Total</p></div>
+                    <div class="stat-card"><h3 id="pendingCount">0</h3><p>⏳ Pending</p></div>
+                    <div class="stat-card"><h3 id="completedCount">0</h3><p>✅ Done</p></div>
+                    <div class="stat-card"><h3 id="interestedCount">0</h3><p>⭐ Interested</p></div>
+                    <div class="stat-card"><h3 id="callingCount">0</h3><p>📞 Calling</p></div>
+                    <div class="stat-card"><h3 id="teamCount">0</h3><p>👥 Team</p></div>
+                </div>
+
+                <div class="card">
+                    <h3>📊 My Performance</h3>
+                    <div id="performanceChart">
+                        <div class="perf-item">
+                            <span class="label">Assigned</span>
+                            <div class="perf-bar"><div class="perf-fill" id="perfAssigned" style="width:100%;background:#667eea;"></div></div>
+                            <span class="value" id="perfAssignedText">0</span>
+                        </div>
+                        <div class="perf-item">
+                            <span class="label">Completed</span>
+                            <div class="perf-bar"><div class="perf-fill" id="perfCompleted" style="width:0%;background:#28a745;"></div></div>
+                            <span class="value" id="perfCompletedText">0</span>
+                        </div>
+                        <div class="perf-item">
+                            <span class="label">Interested</span>
+                            <div class="perf-bar"><div class="perf-fill" id="perfInterested" style="width:0%;background:#ffc107;"></div></div>
+                            <span class="value" id="perfInterestedText">0</span>
+                        </div>
+                        <div class="perf-item">
+                            <span class="label">Pending</span>
+                            <div class="perf-bar"><div class="perf-fill" id="perfPending" style="width:0%;background:#fd7e14;"></div></div>
+                            <span class="value" id="perfPendingText">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Performance -->
+                <div class="card" id="teamPerformanceCard">
+                    <h3>👥 Team Performance <span class="badge" id="teamPerfCount">0</span></h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Agent</th>
+                                    <th>Assigned</th>
+                                    <th>Completed</th>
+                                    <th>Interested</th>
+                                    <th>Pending</th>
+                                    <th>Not Answered</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamPerformanceBody">
+                                <tr><td colspan="6" class="no-data">No team members</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔄 Recent Activity</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Time</th><th>Agent</th><th>Name</th><th>Status</th></tr></thead>
+                            <tbody id="recentActivityBody"><tr><td colspan="4" class="no-data">No activity</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======== TAB: UPLOAD ======== -->
+            <div class="tab-content" id="tab-upload">
+                <div class="card">
+                    <h3>📤 Upload Excel File <span class="row-count">(Upload for your team)</span></h3>
+                    <div class="upload-area">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+                        <button class="btn btn-primary" onclick="handleUpload()">📤 Upload</button>
+                    </div>
+                    <div id="uploadStatus" class="upload-status"></div>
+                    <div class="upload-info">
+                        <strong>📋 Note:</strong> Admin can see all uploaded files. Agents/Sub-Agents can see only data assigned to their login.<br />
+                        <span class="green">✅</span> Phone column automatically detect ho jayega<br />
+                        <span class="green">✅</span> Go to <strong>Assign</strong> tab to assign data to sub-agents
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📋 My Team's Data <span class="badge" id="previewCount">0</span></h3>
+                    <div id="previewContainer">
+                        <div class="table-info">
+                            <span>📊 <span class="highlight" id="previewRowCount">0</span> rows</span>
+                            <span>📋 <span class="highlight" id="previewColCount">0</span> columns</span>
+                            <span>📁 <span id="previewFileName">No file uploaded</span></span>
+                            <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+                        </div>
+                        <div class="table-wrap" id="previewTableWrap">
+                            <table id="previewTable">
+                                <thead id="previewHead">
+                                    <tr><td colspan="1" class="no-data">Upload Excel file to see preview</td></tr>
+                                </thead>
+                                <tbody id="previewBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======== TAB: ASSIGN ======== -->
+            <div class="tab-content" id="tab-assign">
+                <div class="card">
+                    <h3>👥 Assign Data <span class="badge" id="assignScopeBadge">Hierarchy</span></h3>
+                    <div class="filters">
+                        <select id="assignAgentSelect" class="agent-select">
+                            <option value="">Select Team Member</option>
+                        </select>
+                        <input type="search" id="assignSearchInput" placeholder="🔎 Search name / mobile / any data..." oninput="renderAssignTable()" style="min-width:260px;" />
+                        <select id="assignStatusFilter">
+                            <option value="">All Status</option>
+                            <option value="Pending">⏳ Pending</option>
+                            <option value="Assigned">📤 Assigned</option>
+                            <option value="Completed">✅ Completed</option>
+                            <option value="Interested">⭐ Interested</option>
+                        </select>
+                        <button class="btn btn-success" onclick="assignSelected()">📤 Assign Selected</button>
+                        <button class="btn btn-primary" onclick="assignAll()">📤 Assign All Pending</button>
+                    </div>
+                    <div class="upload-info" style="margin-top:10px;">
+                        <strong>📌 Assignment rule:</strong> यहाँ केवल <b>unassigned</b> records दिखेंगे।
+                        जैसे ही कोई record assign होगा, वह इस list से तुरंत हट जाएगा।
+                        Search box से किसी भी record को खोजकर select करके assign कर सकते हैं।
+                    </div>
+                    <div class="table-wrap">
+                        <table id="assignTable" class="dynamic-data-table">
+                            <thead id="assignHead">
+                                <tr><th><input type="checkbox" id="selectAllAssign" onchange="toggleAllAssign()" /></th><th>#</th><th class="no-data">Upload data first</th></tr>
+                            </thead>
+                            <tbody id="assignBody">
+                                <tr><td colspan="3" class="no-data">No data available. Upload data first!</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======== TAB: HIERARCHY ======== -->
+            <div class="tab-content" id="tab-subagents">
+                <div class="hierarchy-shell">
+                    <div class="card">
+                        <div class="card-header">
+                            <div><h3>🌳 Hierarchy <span class="badge" id="subAgentListCount">0</span></h3><small style="color:var(--muted)">Admin → Agent → Sub-Agent</small></div>
+                            <div class="team-actions"><button class="btn btn-success" onclick="showAddSubAgent()">➕ <span id="createUserLabel">Create</span></button></div>
+                        </div>
+                        <div id="hierarchyTree" class="hierarchy-tree"></div>
+                    </div>
+                    <div class="card report-card">
+                        <h3>📊 Team Snapshot</h3>
+                        <div id="teamSnapshot"></div>
+                        <div class="report-actions" style="margin-top:14px"><button class="btn btn-primary" onclick="switchTab('reports')">📈 Open Reports</button></div>
+                    </div>
+                </div>
+                <div class="card" style="margin-top:16px">
+                    <div class="card-header">
+                        <h3>👥 Direct Team <span class="badge" id="directTeamCount">0</span></h3>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>User ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>Assigned</th>
+                                    <th>Completed</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subAgentsBody">
+                                <tr><td colspan="9" class="no-data">No users found</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======== TAB: CALLS ======== -->
+            <div class="tab-content" id="tab-calls">
+                <div class="card">
+                    <h3>📞 My Calls <span class="badge" id="callCount">0</span></h3>
+                    <div class="filters">
+                        <input type="text" id="searchInput" placeholder="🔍 Search..." oninput="renderCalls()" />
+                        <select id="statusFilter" onchange="renderCalls()">
+                            <option value="">All Status</option>
+                            <option value="Pending">⏳ Pending</option>
+                            <option value="Assigned">📤 Assigned</option>
+                            <option value="Calling">📞 Calling</option>
+                            <option value="Called">📞 Called</option>
+                            <option value="Completed">✅ Completed</option>
+                            <option value="Interested">⭐ Interested</option>
+                            <option value="Not Interested">❌ Not Interested</option>
+                            <option value="Call Back Later">⏰ Call Back</option>
+                            <option value="Not Answered">📵 Not Answered</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary" onclick="refreshCalls()">🔄 Refresh</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name / Details</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Call</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="callsBody"><tr><td colspan="6" class="no-data">No calls assigned to you</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======== TAB: HISTORY ======== -->
+            <div class="tab-content" id="tab-history">
+                <div class="card">
+                    <h3>📋 Call History <span class="badge" id="historyCount">0</span></h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name / Details</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Response</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody"><tr><td colspan="6" class="no-data">No history</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======== TAB: REPORTS ======== -->
+            <div class="tab-content" id="tab-reports">
+                <div class="card report-card">
+                    <div class="card-header">
+                        <div><h3>📈 Work Reports</h3><small style="color:var(--muted)">Report scope: <span id="reportScope">My work</span></small></div>
+                        <div class="report-actions">
+                            <button class="btn btn-success" onclick="exportWorkReportExcel()">📊 Excel</button>
+                            <button class="btn btn-primary" onclick="exportWorkReportWord()">📝 Word</button>
+                        </div>
+                    </div>
+                    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
+                        <div class="stat-card"><h3 id="reportTotal">0</h3><p>Total Records</p></div>
+                        <div class="stat-card"><h3 id="reportCalls">0</h3><p>Calls Made</p></div>
+                        <div class="stat-card"><h3 id="reportInterested">0</h3><p>Interested</p></div>
+                        <div class="stat-card"><h3 id="reportPending">0</h3><p>Pending</p></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>👥 Performance by User</h3>
+                    <div class="table-wrap"><table><thead><tr><th>User</th><th>Role</th><th>Assigned</th><th>Calls</th><th>Interested</th><th>Not Answered</th><th>Pending</th></tr></thead><tbody id="reportTeamBody"></tbody></table></div>
+                </div>
+                <div class="card">
+                    <h3>📋 Detailed Work Log</h3>
+                    <div class="table-wrap"><table class="dynamic-data-table"><thead id="reportDetailHead"></thead><tbody id="reportDetailBody"></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- ======== TAB: PROFILE ======== -->
+            <div class="tab-content" id="tab-profile">
+                <div class="card">
+                    <h3>👤 My Profile</h3>
+                    <div class="profile-info">
+                        <p><span class="label">User ID</span> <span id="profileId"></span></p>
+                        <p><span class="label">Name</span> <span id="profileName"></span></p>
+                        <p><span class="label">Email</span> <span id="profileEmail"></span></p>
+                        <p><span class="label">Role</span> <span id="profileRole"></span></p>
+                        <p><span class="label">Level</span> <span id="profileLevel"></span></p>
+                        <p><span class="label">Total Calls</span> <span id="profileTotal">0</span></p>
+                        <p><span class="label">Completed</span> <span id="profileCompleted">0</span></p>
+                        <p><span class="label">Interested</span> <span id="profileInterested">0</span></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔐 Change Password</h3>
+                    <form id="changePasswordForm" onsubmit="return changePassword(event)">
+                        <input type="password" id="currentPassword" placeholder="Current Password" required />
+                        <input type="password" id="newPassword" placeholder="New Password (min 6 chars)" required />
+                        <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+                        <button type="submit" class="btn btn-primary btn-block">Update Password</button>
+                    </form>
+                </div>
+
+                <div class="card admin-only show" id="adminDataManagement">
+                    <h3>🗑️ Data Management (Admin Only)</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All</button>
+                        <button class="btn btn-primary" onclick="exportBackup()">💾 Backup</button>
+                        <button class="btn btn-primary" onclick="document.getElementById('restoreInput').click()">📂 Restore</button>
+                        <input type="file" id="restoreInput" accept=".json" style="display:none;" onchange="restoreBackup(event)" />
+                    </div>
+                </div>
+            </div>
+
+        </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CALL MODAL -->
+    <!-- ============================================ -->
+    <div class="modal" id="callModal">
+        <div class="modal-content">
+            <button class="close" onclick="closeCallModal()">&times;</button>
+            <h2>📞 Call Details</h2>
+            <div id="callerInfo">
+                <p><span class="caller-label">👤 Name:</span> <span id="callName"></span></p>
+                <p><span class="caller-label">📱 Phone:</span> <span id="callPhone" style="color:#28a745;font-weight:600;"></span></p>
+                <p><span class="caller-label">🏢 Company:</span> <span id="callCompany"></span></p>
+                <p><span class="caller-label">👤 Agent:</span> <span id="callAgent"></span></p>
+            </div>
+            <div class="call-status connecting" id="callStatus">📞 Connecting...</div>
+
+            <label>📝 Response:</label>
+            <select id="responseSelect">
+                <option value="Interested">✅ Interested</option>
+                <option value="Not Interested">❌ Not Interested</option>
+                <option value="Call Back Later">⏰ Call Back Later</option>
+                <option value="Wrong Number">❓ Wrong Number</option>
+                <option value="Not Answered">📵 Not Answered</option>
+                <option value="Completed">✅ Completed</option>
+            </select>
+
+            <label>📝 Notes:</label>
+            <textarea id="notesInput" placeholder="Add call notes..."></textarea>
+
+            <button class="btn btn-primary btn-block" onclick="saveResponse()">💾 Save Response</button>
+            <button class="btn btn-block" style="background:#6c757d;color:white;margin-top:6px;" onclick="closeCallModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ADD SUB-AGENT MODAL -->
+    <!-- ============================================ -->
+    <div class="modal" id="addSubAgentModal">
+        <div class="modal-content">
+            <button class="close" onclick="closeAddSubAgentModal()">&times;</button>
+            <h2 id="addUserModalTitle">➕ Add Sub-Agent</h2>
+            <form id="addSubAgentForm" onsubmit="return addSubAgent(event)">
+                <div class="form-row">
+                    <div style="flex:1;">
+                        <label>👤 User ID *</label>
+                        <input type="text" id="newSubAgentId" placeholder="e.g., agent4" required />
+                    </div>
+                    <div style="flex:1;">
+                        <label>🔒 Password *</label>
+                        <input type="text" id="newSubAgentPassword" placeholder="Min 6 chars" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div style="flex:1;">
+                        <label>📛 Full Name *</label>
+                        <input type="text" id="newSubAgentName" placeholder="e.g., Raj Kumar" required />
+                    </div>
+                    <div style="flex:1;">
+                        <label>📧 Email</label>
+                        <input type="email" id="newSubAgentEmail" placeholder="e.g., raj@email.com" />
+                    </div>
+                </div>
+                <div class="form-row" id="newUserRoleRow" style="display:none;">
+                    <div style="flex:1;">
+                        <label>🎯 User Type *</label>
+                        <select id="newSubAgentRole">
+                            <option value="agent">👤 Agent</option>
+                            <option value="subagent" selected>🧑‍💼 Sub-Agent</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" id="addUserSubmitBtn" class="btn btn-success btn-block">✅ Add Sub-Agent</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- EDIT SUB-AGENT MODAL -->
+    <!-- ============================================ -->
+    <div class="modal" id="editSubAgentModal">
+        <div class="modal-content">
+            <button class="close" onclick="closeEditSubAgentModal()">&times;</button>
+            <h2>✏️ Edit Sub-Agent</h2>
+            <form id="editSubAgentForm" onsubmit="return editSubAgent(event)">
+                <input type="hidden" id="editSubAgentId" />
+                <div class="form-row">
+                    <div style="flex:1;">
+                        <label>📛 Full Name</label>
+                        <input type="text" id="editSubAgentName" required />
+                    </div>
+                    <div style="flex:1;">
+                        <label>📧 Email</label>
+                        <input type="email" id="editSubAgentEmail" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div style="flex:1;">
+                        <label>🔒 New Password (leave blank to keep same)</label>
+                        <input type="text" id="editSubAgentPassword" placeholder="Enter new password" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">💾 Update Sub-Agent</button>
+                <button type="button" class="btn btn-danger btn-block" onclick="deleteSubAgentFromEdit()" style="margin-top:6px;">🗑️ Delete Sub-Agent</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- COMPLETE JAVASCRIPT -->
+    <!-- ============================================ -->
+    <script>
+        // =============================================
+        // COMPLETE JAVASCRIPT - HIERARCHICAL SYSTEM
+        // =============================================
+
+        // ===== DATA =====
+        let allContacts = [];
+        let agents = [];
+        let currentUser = null;
+        let currentCallId = null;
+        let callTimer = null;
+        let excelHeaders = [];
+        let uploadedFileName = '';
+        let isCallActive = false;
+        let editingSubAgentId = null;
+        let dataSets = [];
+        let currentPreviewDatasetId = '';
+
+        const DEFAULT_USERS = {
+            admin: { id:'admin', name:'Administrator', email:'', password:'admin123', role:'admin', parent_id:null, level:0, created_at:new Date().toISOString() }
+        };
+
+        function uid(prefix='id') { return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
+
+        function init() {
+            loadUsers();
+            loadData();
+            const savedUser = localStorage.getItem('callCurrentUser');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    if (user && agents.find(a => a.id === user.id)) { currentUser = user; showApp(); return; }
+                } catch (e) { localStorage.removeItem('callCurrentUser'); }
+            }
+            showLogin();
+        }
+
+        function showLogin() { document.getElementById('loginPage').style.display='block'; document.getElementById('appPage').style.display='none'; document.getElementById('loginError').textContent=''; }
+
+        function showApp() {
+            document.getElementById('loginPage').style.display='none'; document.getElementById('appPage').style.display='block';
+            document.getElementById('userName').textContent=currentUser.name;
+            const av=document.getElementById('userAvatar'); if(av) av.textContent=(currentUser.name||'U').trim().charAt(0).toUpperCase();
+            const roleLabel=currentUser.role==='admin'?'👑 Admin':(currentUser.role==='subagent'?'🧑‍💼 Sub-Agent':'👤 Agent');
+            document.getElementById('userRole').textContent=roleLabel;
+            const isAdmin=currentUser.role==='admin';
+            const canCreateUsers=isAdmin || currentUser.role==='agent';
+            document.querySelectorAll('.creator-only').forEach(el=>el.classList.toggle('show',canCreateUsers));
+            document.querySelectorAll('.admin-agent-only').forEach(el=>el.classList.toggle('show',isAdmin));
+            document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('show',isAdmin));
+            document.querySelectorAll('.admin-only-inline').forEach(el=>el.classList.toggle('show',isAdmin));
+            const uploadBtn=document.querySelector('[data-tab="upload"]'); if(uploadBtn) uploadBtn.classList.toggle('show',isAdmin);
+            const assignBtn=document.querySelector('[data-tab="assign"]'); if(assignBtn) assignBtn.classList.toggle('show',isAdmin || currentUser.role==='agent');
+            const device=document.getElementById('deviceBadge'); if(device) device.textContent=(window.innerWidth<=700?'Mobile':'Desktop')+' • '+roleLabel.replace(/[^A-Za-z -]/g,'').trim();
+            loadDashboard(); loadTeamPerformance(); updatePreview(); loadAssignData(); loadSubAgentsList(); loadReports(); renderCalls(); renderHistory(); loadProfile(); switchTab('dashboard');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault(); loadUsers(); loadData();
+            const id=document.getElementById('loginId').value.trim(); const password=document.getElementById('loginPassword').value;
+            const user=agents.find(a=>a.id===id && a.password===password && a.is_active!==false);
+            if(user){ currentUser=user; localStorage.setItem('callCurrentUser',JSON.stringify(user)); showApp(); return false; }
+            document.getElementById('loginError').textContent='❌ Invalid User ID or Password!'; return false;
+        }
+        function logout(){localStorage.removeItem('callCurrentUser');currentUser=null;showLogin();}
+
+        // ===== MULTI-FILE DATA STORAGE =====
+        // Every upload becomes a permanent dataset. Records are never replaced by a later upload.
+        function loadData(){
+            try{
+                const saved=localStorage.getItem('callFlowDatasets');
+                if(saved){ dataSets=JSON.parse(saved)||[]; }
+                else {
+                    const legacy=localStorage.getItem('callContacts');
+                    if(legacy){
+                        const p=JSON.parse(legacy); const old=p.contacts||[];
+                        dataSets=old.length?[{id:uid('ds'),fileName:p.fileName||'Legacy Data',uploadedBy:'admin',uploadedAt:new Date().toISOString(),headers:p.headers||[],contacts:old.map(c=>({...c,dataset_id:c.dataset_id||'legacy'}))}]:[];
+                        saveData();
+                    } else dataSets=[];
+                }
+                normalizeDatasets();
+            }catch(e){dataSets=[];}
+            rebuildContactView();
+        }
+        function normalizeDatasets(){
+            dataSets.forEach(ds=>{
+                if(!ds.id) ds.id=uid('ds'); if(!Array.isArray(ds.contacts)) ds.contacts=[]; if(!Array.isArray(ds.headers)) ds.headers=[];
+                ds.contacts.forEach(c=>{c.dataset_id=ds.id; if(!c.id)c.id=uid('c'); if(!c.status)c.status='Pending'; if(c.assigned_to===undefined)c.assigned_to=''; if(!c.assignment_history)c.assignment_history=[];});
+            });
+        }
+        function rebuildContactView(){
+            allContacts=dataSets.flatMap(ds=>ds.contacts);
+            const ds=currentPreviewDatasetId?dataSets.find(x=>x.id===currentPreviewDatasetId):dataSets[dataSets.length-1];
+            excelHeaders=ds?ds.headers:[]; uploadedFileName=ds?ds.fileName:'';
+        }
+        function saveData(){
+            try{ normalizeDatasets(); localStorage.setItem('callFlowDatasets',JSON.stringify(dataSets)); localStorage.setItem('callContacts',JSON.stringify({contacts:allContacts,headers:excelHeaders,fileName:uploadedFileName,savedAt:new Date().toISOString()})); }catch(e){console.error(e);}
+            rebuildContactView();
+        }
+        function getDataset(id){return dataSets.find(ds=>ds.id===id);}
+        function getUserAssignedContacts(userId){ return allContacts.filter(c=>String(c.assigned_to)===String(userId)); }
+
+        function loadUsers(){
+            try{
+                const saved=localStorage.getItem('callUsers');
+                if(saved){agents=JSON.parse(saved)||[]; agents=agents.filter(a=>!['agent1','agent2','agent3'].includes(a.id)); if(!agents.some(a=>a.role==='admin'))agents=[DEFAULT_USERS.admin]; saveUsers();}
+                else{agents=Object.values(DEFAULT_USERS);saveUsers();}
+            }catch(e){agents=Object.values(DEFAULT_USERS);saveUsers();}
+        }
+        function saveUsers(){try{localStorage.setItem('callUsers',JSON.stringify(agents));}catch(e){}}
+
+        // ===== STRICT HIERARCHY / VISIBILITY =====
+        function getTeamIds(userId){
+            const team=[userId]; const find=(pid)=>agents.filter(a=>a.parent_id===pid).forEach(ch=>{team.push(ch.id);find(ch.id);}); find(userId); return team;
+        }
+        function getVisibleData(userId){
+            const user=agents.find(a=>a.id===userId);
+            if(!user)return [];
+            // Admin: all data. Agent/Sub-Agent: ONLY records directly assigned to that login.
+            return user.role==='admin'?allContacts.slice():allContacts.filter(c=>String(c.assigned_to)===String(userId));
+        }
+        function getSubAgents(userId){return agents.filter(a=>a.parent_id===userId);}
+        function getAssignableUsers(){
+            if(!currentUser)return [];
+            return getSubAgents(currentUser.id);
+        }
+        function canManageUser(managerId,targetId){return managerId===targetId || getTeamIds(managerId).includes(targetId);}
+
+        // =============================================
+        // REFRESH FUNCTIONS
+        // =============================================
+
+        function refreshAll() {
+            loadData();
+            loadUsers();
+            loadDashboard();
+            updatePreview();
+            loadAssignData();
+            loadSubAgentsList();
+            loadTeamPerformance();
+            loadReports();
+            renderCalls();
+            renderHistory();
+            loadProfile();
+        }
+
+        function refreshData() {
+            loadData();
+            updatePreview();
+            showStatus('🔄 Data refreshed!', 'info');
+        }
+
+        function refreshCalls() {
+            loadData();
+            renderCalls();
+            loadDashboard();
+            showStatus('🔄 Calls refreshed!', 'info');
+        }
+
+        // =============================================
+        // APP SETUP
+        // =============================================
+
+        function setupApp() {
+            document.querySelectorAll('.top-nav button[data-tab], .side-nav button[data-tab]').forEach(btn => {
+                btn.onclick = function(e) {
+                    e.preventDefault();
+                    const tab = this.dataset.tab;
+                    if (tab) switchTab(tab);
+                };
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') {
+                    document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                }
+            });
+        }
+
+        function switchTab(tab) {
+            const target = document.getElementById('tab-' + tab);
+            if (!target) {
+                console.warn('Tab not found:', tab);
+                return false;
+            }
+
+            document.querySelectorAll('.top-nav button[data-tab], .side-nav button[data-tab]')
+                .forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            target.classList.add('active');
+
+            const navBtn = document.querySelector(`.top-nav button[data-tab="${tab}"], .side-nav button[data-tab="${tab}"]`);
+            if (navBtn) navBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+            const titles = {
+                dashboard: '📊 Dashboard',
+                upload: '📤 Upload',
+                assign: '👥 Assign',
+                subagents: '🌳 My Hierarchy',
+                calls: '📞 My Calls',
+                history: '📋 History',
+                reports: '📈 Reports',
+                profile: '⚙️ Profile'
+            };
+
+            if (tab === 'dashboard') { loadDashboard();
+                loadTeamPerformance(); }
+            if (tab === 'upload') updatePreview();
+            if (tab === 'assign') loadAssignData();
+            if (tab === 'subagents') loadSubAgentsList();
+            if (tab === 'calls') renderCalls();
+            if (tab === 'history') renderHistory();
+            if (tab === 'reports') loadReports();
+            if (tab === 'profile') loadProfile();
+
+            return true;
+        }
+
+        // =============================================
+        // DASHBOARD
+        // =============================================
+
+        function loadDashboard() {
+            const visibleData = getVisibleData(currentUser.id);
+
+            document.getElementById('totalCount').textContent = visibleData.length;
+            document.getElementById('pendingCount').textContent = visibleData.filter(c => c.status === 'Pending' || c.status ===
+                'Call Back Later' || c.status === 'Assigned').length;
+            document.getElementById('completedCount').textContent = visibleData.filter(c => c.status === 'Completed' || c
+                .status === 'Called' || c.status === 'Interested').length;
+            document.getElementById('interestedCount').textContent = visibleData.filter(c => c.status === 'Interested').length;
+            document.getElementById('callingCount').textContent = visibleData.filter(c => c.status === 'Calling').length;
+
+            // Team count
+            const teamIds = getTeamIds(currentUser.id);
+            document.getElementById('teamCount').textContent = teamIds.length - 1; // Excluding self
+
+            // Performance
+            const total = visibleData.length || 1;
+            const completed = visibleData.filter(c => c.status === 'Completed' || c.status === 'Interested' || c.status ===
+                'Called').length;
+            const interested = visibleData.filter(c => c.status === 'Interested').length;
+            const pending = visibleData.filter(c => c.status === 'Pending' || c.status === 'Assigned' || c.status ===
+                'Call Back Later').length;
+
+            document.getElementById('perfAssigned').style.width = '100%';
+            document.getElementById('perfAssignedText').textContent = total;
+            document.getElementById('perfCompleted').style.width = Math.round((completed / total) * 100) + '%';
+            document.getElementById('perfCompletedText').textContent = completed;
+            document.getElementById('perfInterested').style.width = Math.round((interested / total) * 100) + '%';
+            document.getElementById('perfInterestedText').textContent = interested;
+            document.getElementById('perfPending').style.width = Math.round((pending / total) * 100) + '%';
+            document.getElementById('perfPendingText').textContent = pending;
+
+            // Recent Activity
+            const recent = visibleData.filter(c => c.callTime).sort((a, b) => new Date(b.callTime) - new Date(a.callTime))
+                .slice(0, 15);
+            const body = document.getElementById('recentActivityBody');
+            if (recent.length === 0) {
+                body.innerHTML = '<tr><td colspan="4" class="no-data">No activity yet</td></tr>';
+            } else {
+                body.innerHTML = recent.map(c => {
+                    const agent = agents.find(a => a.id === c.assigned_to);
+                    return `
+                            <tr>
+                                <td>${new Date(c.callTime).toLocaleString()}</td>
+                                <td>${agent ? agent.name : 'Unassigned'}</td>
+                                <td>${c.name || 'Unknown'}</td>
+                                <td><span class="status-badge status-${(c.status||'Pending').replace(/ /g,'-')}">${c.status}</span></td>
+                            </tr>
+                        `;
+                }).join('');
+            }
+        }
+
+        // =============================================
+        // TEAM PERFORMANCE
+        // =============================================
+
+        function loadTeamPerformance(){
+            const body=document.getElementById('teamPerformanceBody'), count=document.getElementById('teamPerfCount');
+            if(currentUser.role==='subagent'){count.textContent='0';body.innerHTML='<tr><td colspan="6" class="no-data">Team view unavailable</td></tr>';return;}
+            const members=currentUser.role==='admin'?agents.filter(a=>a.role!=='admin'):getSubAgents(currentUser.id); count.textContent=members.length;
+            body.innerHTML=members.map((a,i)=>{const assigned=getVisibleData(a.id);const completed=assigned.filter(c=>['Completed','Called','Interested'].includes(c.status)).length;const interested=assigned.filter(c=>c.status==='Interested').length;const pending=assigned.filter(c=>['Pending','Assigned','Call Back Later'].includes(c.status)).length;const na=assigned.filter(c=>c.status==='Not Answered').length;return `<tr><td><strong>${i+1}. ${escapeHtml(a.name)}</strong></td><td>${assigned.length}</td><td>${completed}</td><td>${interested}</td><td>${pending}</td><td>${na}</td></tr>`;}).join('')||'<tr><td colspan="6" class="no-data">No team members</td></tr>';
+        }
+
+        // =============================================
+        // UPLOAD
+        // =============================================
+
+        function handleUpload() {
+            if(!currentUser || currentUser.role!=='admin'){showStatus('❌ Only Admin can upload master files.','error');return;}
+            const fileInput=document.getElementById('fileInput'); const file=fileInput.files[0];
+            if(!file){showStatus('❌ Please select a file first!','error');return;}
+            if(typeof XLSX==='undefined'){showStatus('❌ XLSX library not loaded.','error');return;}
+            showStatus('⏳ Reading file...','info'); const reader=new FileReader();
+            reader.onload=function(e){
+                try{
+                    const workbook=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); const sheet=workbook.Sheets[workbook.SheetNames[0]];
+                    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false}); if(!rows.length){showStatus('❌ No data found','error');return;}
+                    const range=XLSX.utils.decode_range(sheet['!ref']||'A1:A1'); const maxCols=range.e.c-range.s.c+1; const rawHeaders=rows[0]||[]; const seen={}; const headers=[];
+                    for(let i=0;i<maxCols;i++){let h=String(rawHeaders[i]??'').trim()||`Column ${i+1}`;const base=h;seen[base]=(seen[base]||0)+1;if(seen[base]>1)h=`${base} (${seen[base]})`;headers.push(h);}
+                    const phoneHeaderIndex=headers.findIndex(h=>/phone|mobile|contact/i.test(h));
+                    const phoneIndex=phoneHeaderIndex>=0?phoneHeaderIndex:headers.findIndex((h,idx)=>rows.slice(1,Math.min(rows.length,11)).some(r=>String(r[idx]??'').replace(/[^0-9+]/g,'').length>=10));
+                    const dsId=uid('ds'); const contacts=[];
+                    rows.slice(1).forEach((row,idx)=>{
+                        if(!row.some(v=>String(v??'').trim()!==''))return;
+                        const obj={}; headers.forEach((h,i)=>obj[h]=row[i]??'');
+                        const phone=phoneIndex>=0?String(row[phoneIndex]??'').trim():'';
+                        contacts.push({id:uid('c'),dataset_id:dsId,_allData:obj,name:String(obj.Name||obj.name||'').trim(),phone,email:String(obj.Email||obj.email||'').trim(),company:String(obj.Company||obj.company||'').trim(),status:'Pending',assigned_to:'',uploaded_by:currentUser.id,uploaded_at:new Date().toISOString(),assignment_history:[]});
+                    });
+                    if(!contacts.length){showStatus('❌ No data rows found','error');return;}
+                    dataSets.push({id:dsId,fileName:file.name,uploadedBy:currentUser.id,uploadedAt:new Date().toISOString(),headers,contacts});
+                    currentPreviewDatasetId=dsId; saveData(); refreshAll(); fileInput.value='';
+                    showStatus(`✅ ${file.name}: ${contacts.length} rows added. Existing files/data were NOT replaced.`,'success');
+                }catch(error){console.error(error);showStatus(`❌ Upload failed: ${error.message}`,'error');}
+            }; reader.onerror=()=>showStatus('❌ Failed to read file','error'); reader.readAsArrayBuffer(file);
+        }
+
+        function deleteDataset(datasetId){
+            if(!currentUser || currentUser.role!=='admin'){
+                showStatus('❌ Only Admin can delete uploaded files.','error');
+                return;
+            }
+            const ds=getDataset(datasetId);
+            if(!ds)return;
+            const assigned=ds.contacts.filter(c=>c.assigned_to).length;
+            const message=`Delete "${ds.fileName}"?\\n\\nThis will permanently remove ${ds.contacts.length} records from this browser, including ${assigned} already-assigned records and their call/response history.\\n\\nThis action cannot be undone unless you have a backup.`;
+            if(!confirm(message))return;
+            dataSets=dataSets.filter(x=>x.id!==datasetId);
+            if(currentPreviewDatasetId===datasetId) currentPreviewDatasetId=dataSets.length?dataSets[dataSets.length-1].id:'';
+            saveData();
+            refreshAll();
+            showStatus(`🗑️ ${ds.fileName} deleted successfully.`,'success');
+        }
+
+        function showStatus(msg, type = 'info') {
+            const el = document.getElementById('uploadStatus');
+            el.textContent = msg;
+            el.className = 'upload-status ' + type;
+            clearTimeout(el._timeout);
+            el._timeout = setTimeout(() => {
+                el.textContent = '';
+                el.className = 'upload-status';
+            }, 8000);
+        }
+
+        // =============================================
+        // PREVIEW
+        // =============================================
+
+        function updatePreview(){
+            const previewBody=document.getElementById('previewBody'), previewHead=document.getElementById('previewHead'), rowCount=document.getElementById('previewRowCount'), colCount=document.getElementById('previewColCount'), fileName=document.getElementById('previewFileName'), previewCount=document.getElementById('previewCount');
+            rebuildContactView();
+            if(currentUser.role!=='admin'){
+                const rows=getVisibleData(currentUser.id); fileName.textContent='My Assigned Data'; rowCount.textContent=rows.length; colCount.textContent=rows.length?(Object.keys(rows[0]._allData||{}).length+2):0; previewCount.textContent=rows.length;
+                const headers=rows.length?Object.keys(rows[0]._allData||{}):['No assigned data']; previewHead.innerHTML='<tr>'+headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')+'</tr>'; previewBody.innerHTML=rows.map(c=>'<tr>'+headers.map(h=>`<td>${escapeHtml(c._allData?.[h]??'')}</td>`).join('')+'</tr>').join(''); return;
+            }
+            const dsList=dataSets; rowCount.textContent=allContacts.length; colCount.textContent=dsList.length; previewCount.textContent=dsList.length; fileName.textContent=dsList.length?`${dsList.length} file(s) stored`:'No file uploaded';
+            previewHead.innerHTML='<tr><th>#</th><th>File</th><th>Rows</th><th>Uploaded By</th><th>Date</th><th>Assigned</th><th>Pending</th><th>Action</th></tr>';
+            previewBody.innerHTML=dsList.map((ds,i)=>{
+                const assigned=ds.contacts.filter(c=>c.assigned_to).length;
+                const pending=ds.contacts.filter(c=>!c.assigned_to).length;
+                const u=agents.find(a=>a.id===ds.uploadedBy);
+                return `<tr>
+                    <td>${i+1}</td>
+                    <td><strong>${escapeHtml(ds.fileName)}</strong></td>
+                    <td>${ds.contacts.length}</td>
+                    <td>${escapeHtml(u?.name||ds.uploadedBy||'-')}</td>
+                    <td>${new Date(ds.uploadedAt).toLocaleString()}</td>
+                    <td>${assigned}</td>
+                    <td>${pending}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="deleteDataset('${escapeHtml(ds.id)}')">🗑️ Delete File</button></td>
+                </tr>`;
+            }).join('')||'<tr><td colspan="8" class="no-data">No files uploaded</td></tr>';
+        }
+
+        // =============================================
+        // ASSIGN DATA
+        // =============================================
+
+        function loadAssignData() {
+            const select = document.getElementById('assignAgentSelect');
+            const subAgents = getAssignableUsers();
+
+            select.innerHTML = '<option value="">Select Team Member</option>';
+            subAgents.forEach(a => {
+                select.innerHTML += `<option value="${a.id}">${a.name} (${a.id})</option>`;
+            });
+
+            renderAssignTable();
+        }
+
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function renderAssignTable(){
+            const agentId=document.getElementById('assignAgentSelect').value;
+            const status=document.getElementById('assignStatusFilter').value;
+            const search=(document.getElementById('assignSearchInput')?.value||'').trim().toLowerCase();
+
+            // Assignment queue = ONLY unassigned records visible to this user.
+            // Admin sees all unassigned records; Agent sees only records directly assigned to them.
+            let filtered=allContacts.filter(c=>{
+                if(c.assigned_to) return false;
+                if(currentUser.role==='admin') return true;
+                return String(c.assigned_to)===String(currentUser.id);
+            });
+
+            // Status filter is still respected, but assigned records can never reappear here.
+            if(status) filtered=filtered.filter(c=>c.status===status);
+
+            // Search every Excel field plus common fields.
+            if(search){
+                filtered=filtered.filter(c=>{
+                    const values=[
+                        c.name,c.phone,c.email,c.company,
+                        ...Object.values(c._allData||{})
+                    ];
+                    return values.some(v=>String(v??'').toLowerCase().includes(search));
+                });
+            }
+
+            const head=document.getElementById('assignHead'),body=document.getElementById('assignBody');
+            const headers=[...new Set(dataSets.flatMap(ds=>ds.headers||[]))].filter(h=>!['Status','Assigned To'].includes(h));
+            const totalCols=headers.length+5;
+
+            head.innerHTML='<tr><th><input type="checkbox" id="selectAllAssign" onchange="toggleAllAssign()" /></th><th>#</th><th>File</th>'+
+                headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')+
+                '<th>Status</th><th>Assigned To</th></tr>';
+
+            if(!filtered.length){
+                body.innerHTML=`<tr><td colspan="${totalCols}" class="no-data">No unassigned data found. Assigned records automatically disappear from this list.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML=filtered.map((c,i)=>{
+                const ds=getDataset(c.dataset_id);
+                const cells=headers.map(h=>`<td>${escapeHtml(c._allData?.[h]??'')}</td>`).join('');
+                return `<tr>
+                    <td><input type="checkbox" class="assign-checkbox" data-id="${escapeHtml(c.id)}" /></td>
+                    <td>${i+1}</td>
+                    <td>${escapeHtml(ds?.fileName||'-')}</td>
+                    ${cells}
+                    <td><span class="status-badge status-${String(c.status||'Pending').replace(/ /g,'-')}">${escapeHtml(c.status||'Pending')}</span></td>
+                    <td>Unassigned</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // =============================================
+        function assignSelected(){
+            const agentId=document.getElementById('assignAgentSelect').value;
+            if(!agentId){alert('❌ Please select a team member first!');return;}
+            if(!getAssignableUsers().some(a=>a.id===agentId)){alert('❌ You can only assign to your direct team members.');return;}
+            const selected=[...document.querySelectorAll('.assign-checkbox:checked')]; if(!selected.length){alert('❌ Please select at least one contact!');return;}
+            const agent=agents.find(a=>a.id===agentId); if(!agent)return;
+            if(!confirm(`Assign ${selected.length} contacts to ${agent.name}?`))return;
+            let moved=0;
+            selected.forEach(cb=>{const c=allContacts.find(x=>String(x.id)===String(cb.dataset.id)); if(!c)return;
+                // Only records still in the assignment queue can be assigned.
+                const allowed=currentUser.role==='admin'?(!c.assigned_to):String(c.assigned_to)===String(currentUser.id);
+                if(!allowed)return;
+                c.assignment_history=c.assignment_history||[]; c.assignment_history.push({from:c.assigned_to||'Unassigned',to:agentId,by:currentUser.id,at:new Date().toISOString()}); c.assigned_to=agentId; if(c.status==='Pending')c.status='Assigned'; moved++;
+            });
+            saveData(); refreshAll(); showStatus(`✅ ${moved} contacts assigned to ${agent.name}.`,'success');
+        }
+        function assignAll(){
+            const agentId=document.getElementById('assignAgentSelect').value; if(!agentId){alert('❌ Please select a team member first!');return;}
+            if(!getAssignableUsers().some(a=>a.id===agentId)){alert('❌ You can only assign to your direct team members.');return;}
+            const visible=currentUser.role==='admin'
+                ? allContacts.filter(c=>!c.assigned_to)
+                : allContacts.filter(c=>String(c.assigned_to)===String(currentUser.id));
+            const pending=visible.filter(c=>!c.assigned_to);
+            if(!pending.length){alert('❌ No assignable contacts available!');return;}
+            const agent=agents.find(a=>a.id===agentId); if(!confirm(`Assign ${pending.length} contacts to ${agent.name}?`))return;
+            pending.forEach(c=>{c.assignment_history=c.assignment_history||[];c.assignment_history.push({from:c.assigned_to||'Unassigned',to:agentId,by:currentUser.id,at:new Date().toISOString()});c.assigned_to=agentId;if(c.status==='Pending')c.status='Assigned';});
+            saveData();refreshAll();showStatus(`✅ ${pending.length} contacts assigned to ${agent.name}.`,'success');
+        }
+
+        // SUB-AGENTS MANAGEMENT
+        // =============================================
+
+        function loadSubAgentsList() {
+            loadHierarchy();
+            const body = document.getElementById('subAgentsBody');
+            const subAgents = getSubAgents(currentUser.id);
+
+            document.getElementById('subAgentListCount').textContent = subAgents.length;
+
+            if (subAgents.length === 0) {
+                body.innerHTML = '<tr><td colspan="9" class="no-data">No users found</td></tr>';
+                return;
+            }
+
+            body.innerHTML = subAgents.map((a, i) => {
+                const assigned = allContacts.filter(c => c.assigned_to === a.id);
+                const completed = assigned.filter(c => c.status === 'Completed' || c.status === 'Called');
+                return `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td><strong>${a.id}</strong></td>
+                            <td>${a.name}</td>
+                            <td>${a.email || '-'}</td>
+                            <td>${a.role === 'agent' ? '👤 Agent' : '🧑‍💼 Sub-Agent'}</td>
+                            <td>${assigned.length}</td>
+                            <td>${completed.length}</td>
+                            <td><span class="status-badge status-${a.is_active !== false ? 'Completed' : 'Failed'}">${a.is_active !== false ? '🟢 Active' : '🔴 Inactive'}</span></td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" onclick="openEditSubAgent('${a.id}')">✏️</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteSubAgent('${a.id}')">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+            }).join('');
+        }
+
+        function showAddSubAgent() {
+            if (!currentUser || !['admin', 'agent'].includes(currentUser.role)) {
+                alert('❌ Only Admin and Agent can create users.');
+                return;
+            }
+            document.getElementById('addSubAgentModal').classList.add('show');
+            document.getElementById('addSubAgentForm').reset();
+            const isAdmin = currentUser.role === 'admin';
+            document.getElementById('newUserRoleRow').style.display = isAdmin ? 'flex' : 'none';
+            document.getElementById('newSubAgentRole').value = 'subagent';
+            document.getElementById('addUserModalTitle').textContent = isAdmin ? '➕ Add User' : '➕ Add Sub-Agent';
+            document.getElementById('addUserSubmitBtn').textContent = isAdmin ? '✅ Create User' : '✅ Add Sub-Agent';
+            const createLabel = document.getElementById('createUserLabel'); if(createLabel) createLabel.textContent = isAdmin ? 'User' : 'Sub-Agent';
+        }
+
+        function closeAddSubAgentModal() {
+            document.getElementById('addSubAgentModal').classList.remove('show');
+        }
+
+        function addSubAgent(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('newSubAgentId').value.trim();
+            const name = document.getElementById('newSubAgentName').value.trim();
+            const email = document.getElementById('newSubAgentEmail').value.trim();
+            const password = document.getElementById('newSubAgentPassword').value.trim();
+            let finalId = id;
+            if(!finalId){ let base=name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'').slice(0,18)||'user'; finalId=base; let n=2; while(agents.some(a=>a.id===finalId)) finalId=base+n++; }
+
+            if (!currentUser || !['admin', 'agent'].includes(currentUser.role)) {
+                alert('❌ You do not have permission to create users!');
+                return false;
+            }
+
+            if (!name || !password) {
+                alert('❌ User ID, Name and Password are required!');
+                return false;
+            }
+
+            if (password.length < 6) {
+                alert('❌ Password must be at least 6 characters!');
+                return false;
+            }
+
+            if (agents.find(a => a.id === finalId)) {
+                alert('❌ User ID already exists!');
+                return false;
+            }
+
+            // Admin may create Agent or Sub-Agent. Agent may create only Sub-Agent.
+            const requestedRole = document.getElementById('newSubAgentRole').value;
+            const role = currentUser.role === 'admin' ? 'agent' : 'subagent';
+
+            agents.push({
+                id: finalId,
+                name: name,
+                email: email || '',
+                password: password,
+                role: role,
+                parent_id: currentUser.id,
+                level: (currentUser.level || 0) + 1,
+                is_active: true,
+                created_at: new Date().toISOString()
+            });
+
+            saveUsers();
+            loadSubAgentsList();
+            closeAddSubAgentModal();
+            alert(role === 'agent' ? '✅ Agent created successfully!' : '✅ Sub-Agent added successfully!');
+            return false;
+        }
+
+        function openEditSubAgent(agentId) {
+            const agent = agents.find(a => a.id === agentId);
+            if (!agent || agent.parent_id !== currentUser.id) {
+                alert('❌ You can only manage your own direct sub-agents!');
+                return;
+            }
+
+            editingSubAgentId = agentId;
+            document.getElementById('editSubAgentId').value = agentId;
+            document.getElementById('editSubAgentName').value = agent.name || '';
+            document.getElementById('editSubAgentEmail').value = agent.email || '';
+            document.getElementById('editSubAgentPassword').value = '';
+            document.getElementById('editSubAgentModal').classList.add('show');
+        }
+
+        function closeEditSubAgentModal() {
+            document.getElementById('editSubAgentModal').classList.remove('show');
+            editingSubAgentId = null;
+        }
+
+        function editSubAgent(e) {
+            e.preventDefault();
+
+            const agentId = document.getElementById('editSubAgentId').value;
+            const name = document.getElementById('editSubAgentName').value.trim();
+            const email = document.getElementById('editSubAgentEmail').value.trim();
+            const password = document.getElementById('editSubAgentPassword').value.trim();
+
+            const agent = agents.find(a => a.id === agentId);
+            if (!agent) {
+                alert('Sub-Agent not found!');
+                return false;
+            }
+
+            agent.name = name || agent.name;
+            agent.email = email || agent.email;
+
+            if (password && password.length >= 6) {
+                agent.password = password;
+            } else if (password && password.length < 6) {
+                alert('❌ Password must be at least 6 characters!');
+                return false;
+            }
+
+            saveUsers();
+            loadSubAgentsList();
+            closeEditSubAgentModal();
+            alert('✅ Sub-Agent updated successfully!');
+            return false;
+        }
+
+        function deleteSubAgentFromEdit() {
+            const agentId = document.getElementById('editSubAgentId').value;
+            deleteSubAgent(agentId);
+            closeEditSubAgentModal();
+        }
+
+        function deleteSubAgent(agentId) {
+            const target = agents.find(a => a.id === agentId);
+            if (!target || target.parent_id !== currentUser.id) {
+                alert('❌ You can only delete your own direct sub-agents!');
+                return;
+            }
+            if (!confirm(`Delete ${target.role === 'agent' ? 'agent' : 'sub-agent'} ${agentId}? This will also unassign their data.`)) return;
+
+            // Unassign all contacts from this agent
+            allContacts.forEach(c => {
+                if (c.assigned_to === agentId) {
+                    c.assigned_to = '';
+                    c.status = 'Pending';
+                }
+            });
+
+            // Also delete any sub-agents under this agent
+            const subAgents = agents.filter(a => a.parent_id === agentId);
+            subAgents.forEach(sa => {
+                allContacts.forEach(c => {
+                    if (c.assigned_to === sa.id) {
+                        c.assigned_to = '';
+                        c.status = 'Pending';
+                    }
+                });
+            });
+
+            agents = agents.filter(a => a.id !== agentId && a.parent_id !== agentId);
+            saveUsers();
+            saveData();
+            loadSubAgentsList();
+            loadAssignData();
+            refreshAll();
+            showStatus(`🗑️ Sub-Agent ${agentId} deleted`, 'info');
+        }
+
+        // =============================================
+        // CALL FUNCTIONS
+        // =============================================
+
+        function isMobileDevice(){ return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && /Macintosh/i.test(navigator.userAgent)); }
+        function updateDeviceUI(){ const mobile=isMobileDevice(); const b=document.getElementById('deviceBadge'); if(b){b.textContent=mobile?'Mobile • Calling enabled':'Desktop • View mode'; b.className='device-badge '+(mobile?'mobile':'desktop');} document.querySelectorAll('.call-action').forEach(x=>{x.disabled=!mobile; x.title=mobile?'Tap to call':'Calling is available on mobile only';}); }
+
+        function makeCallFromPhone(contactId) {
+            if(!isMobileDevice()){ alert('📱 Calling is available on mobile devices only. Desktop is view/management mode.'); return; }
+            if (isCallActive) {
+                alert('📞 A call is already in progress!');
+                return;
+            }
+
+            const contact = allContacts.find(c => String(c.id) === String(contactId));
+            if (!contact) {
+                alert('Contact not found!');
+                return;
+            }
+
+            if (!contact.phone) {
+                alert('❌ No phone number available!');
+                return;
+            }
+
+            // Strict privacy: only Admin or the user directly assigned to this record may call.
+            if (currentUser.role !== 'admin' && String(contact.assigned_to) !== String(currentUser.id)) {
+                alert('❌ You do not have access to this contact!');
+                return;
+            }
+
+            isCallActive = true;
+
+            contact.status = 'Calling';
+            saveData();
+            renderCalls();
+            loadDashboard();
+            updatePreview();
+
+            openCallModal(contactId);
+            document.getElementById('callStatus').className = 'call-status connecting';
+            document.getElementById('callStatus').textContent = '📞 Dialing...';
+
+            if (callTimer) clearTimeout(callTimer);
+            callTimer = setTimeout(() => {
+                document.getElementById('callStatus').className = 'call-status connected';
+                document.getElementById('callStatus').textContent = '✅ Call Connected!';
+            }, 3000);
+
+            try {
+                let phoneNumber = contact.phone.replace(/[^0-9+]/g, '');
+                phoneNumber = phoneNumber.replace(/^\+/, '');
+                if (phoneNumber) {
+                    window.location.href = 'tel:' + phoneNumber;
+                }
+            } catch (e) {
+                console.log('Phone call not supported');
+            }
+
+            setTimeout(() => {
+                if (contact.status === 'Calling') {
+                    contact.status = 'Called';
+                    contact.callTime = new Date().toISOString();
+                    saveData();
+                    renderCalls();
+                    loadDashboard();
+                    updatePreview();
+                    document.getElementById('callStatus').className = 'call-status called';
+                    document.getElementById('callStatus').textContent = '📞 Call Completed! Please save response.';
+                    isCallActive = false;
+                }
+            }, 10000);
+        }
+
+        function makeCall(contactId) {
+            if(!isMobileDevice()){ alert('📱 Calling is available on mobile devices only. Desktop is view/management mode.'); return; }
+            if (isCallActive) {
+                alert('📞 A call is already in progress!');
+                return;
+            }
+
+            const contact = allContacts.find(c => String(c.id) === String(contactId));
+            if (!contact) {
+                alert('Contact not found!');
+                return;
+            }
+
+            if (!contact.phone) {
+                alert('❌ No phone number available!');
+                return;
+            }
+
+            const teamIds = getTeamIds(currentUser.id);
+            if (!teamIds.includes(contact.assigned_to) && contact.assigned_to !== '') {
+                alert('❌ You do not have access to this contact!');
+                return;
+            }
+
+            isCallActive = true;
+
+            contact.status = 'Calling';
+            saveData();
+            renderCalls();
+            loadDashboard();
+            updatePreview();
+
+            openCallModal(contactId);
+            document.getElementById('callStatus').className = 'call-status connecting';
+            document.getElementById('callStatus').textContent = '📞 Dialing...';
+
+            if (callTimer) clearTimeout(callTimer);
+            callTimer = setTimeout(() => {
+                document.getElementById('callStatus').className = 'call-status connected';
+                document.getElementById('callStatus').textContent = '✅ Call Connected!';
+            }, 3000);
+
+            try {
+                let phoneNumber = contact.phone.replace(/[^0-9+]/g, '');
+                phoneNumber = phoneNumber.replace(/^\+/, '');
+                if (phoneNumber) {
+                    window.location.href = 'tel:' + phoneNumber;
+                }
+            } catch (e) {
+                console.log('Phone call not supported');
+            }
+
+            setTimeout(() => {
+                if (contact.status === 'Calling') {
+                    contact.status = 'Called';
+                    contact.callTime = new Date().toISOString();
+                    saveData();
+                    renderCalls();
+                    loadDashboard();
+                    updatePreview();
+                    document.getElementById('callStatus').className = 'call-status called';
+                    document.getElementById('callStatus').textContent = '📞 Call Completed! Please save response.';
+                    isCallActive = false;
+                }
+            }, 10000);
+        }
+
+        // =============================================
+        // CALL MODAL
+        // =============================================
+
+        function openCallModal(contactId) {
+            const contact = allContacts.find(c => String(c.id) === String(contactId));
+            if (!contact) {
+                alert('Contact not found!');
+                return;
+            }
+            if (currentUser.role !== 'admin' && String(contact.assigned_to) !== String(currentUser.id)) {
+                alert('❌ You do not have access to this contact!');
+                return;
+            }
+
+            currentCallId = contactId;
+            document.getElementById('callModal').classList.add('show');
+
+            document.getElementById('callName').textContent = contact.name || 'Unknown';
+            const cleanPhone = (contact.phone || 'N/A').replace(/^\+/, '');
+            document.getElementById('callPhone').textContent = cleanPhone;
+            document.getElementById('callCompany').textContent = contact.company || 'N/A';
+
+            const agent = agents.find(a => a.id === contact.assigned_to);
+            document.getElementById('callAgent').textContent = agent ? agent.name : 'Unassigned';
+
+            if (contact.response) {
+                document.getElementById('responseSelect').value = contact.response;
+            } else {
+                document.getElementById('responseSelect').value = 'Interested';
+            }
+
+            document.getElementById('notesInput').value = contact.notes || '';
+
+            if (contact.status === 'Calling') {
+                document.getElementById('callStatus').className = 'call-status connecting';
+                document.getElementById('callStatus').textContent = '📞 Call in progress...';
+            } else if (contact.status === 'Called' || contact.status === 'Completed' || contact.status === 'Interested') {
+                document.getElementById('callStatus').className = 'call-status called';
+                document.getElementById('callStatus').textContent = '📞 Call completed!';
+            } else {
+                document.getElementById('callStatus').className = 'call-status ended';
+                document.getElementById('callStatus').textContent = '📊 Status: ' + (contact.status || 'Pending');
+            }
+        }
+
+        function closeCallModal() {
+            document.getElementById('callModal').classList.remove('show');
+            if (callTimer) {
+                clearTimeout(callTimer);
+                callTimer = null;
+            }
+            currentCallId = null;
+            isCallActive = false;
+        }
+
+        function saveResponse() {
+            if (!currentCallId) {
+                alert('No call selected!');
+                return;
+            }
+
+            const contact = allContacts.find(c => String(c.id) === String(currentCallId));
+            if (!contact) {
+                alert('Contact not found!');
+                return;
+            }
+            if (currentUser.role !== 'admin' && String(contact.assigned_to) !== String(currentUser.id)) {
+                alert('❌ You cannot update a contact that is not assigned to you.');
+                return;
+            }
+
+            const response = document.getElementById('responseSelect').value;
+            const notes = document.getElementById('notesInput').value;
+
+            let status = 'Completed';
+            if (response === 'Not Interested') status = 'Not Interested';
+            else if (response === 'Call Back Later') status = 'Call Back Later';
+            else if (response === 'Wrong Number') status = 'Wrong Number';
+            else if (response === 'Not Answered') status = 'Not Answered';
+            else if (response === 'Interested') status = 'Interested';
+            else if (response === 'Completed') status = 'Completed';
+
+            if (contact.status === 'Called' && status === 'Completed') {
+                status = 'Called';
+            }
+
+            contact.status = status;
+            contact.response = response;
+            contact.notes = notes;
+            if (!contact.callTime) {
+                contact.callTime = new Date().toISOString();
+            }
+
+            saveData();
+
+            document.getElementById('callStatus').className = 'call-status ended';
+            document.getElementById('callStatus').textContent = '✅ Response saved: ' + response;
+
+            refreshAll();
+
+            showStatus(`✅ Response saved for ${contact.name}`, 'success');
+
+            setTimeout(() => {
+                closeCallModal();
+            }, 1500);
+        }
+
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('callModal');
+            if (e.target === modal) {
+                closeCallModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCallModal();
+            }
+        });
+
+        // =============================================
+        // CALLS
+        // =============================================
+
+        function renderCalls(){
+            const search=(document.getElementById('searchInput')?.value||'').toLowerCase(); const status=document.getElementById('statusFilter')?.value||'';
+            let rows=getVisibleData(currentUser.id).slice();
+            if(search) rows=rows.filter(c=>Object.values(c._allData||{}).some(v=>String(v).toLowerCase().includes(search))||String(c.phone||'').includes(search)||String(c.name||'').toLowerCase().includes(search));
+            if(status) rows=rows.filter(c=>c.status===status);
+            document.getElementById('callCount').textContent=rows.length; const body=document.getElementById('callsBody');
+            if(!rows.length){body.innerHTML='<tr><td colspan="6" class="no-data">No calls assigned to you</td></tr>';return;}
+            body.innerHTML=rows.map((c,index)=>{const cleanPhone=String(c.phone||'').replace(/[^0-9+]/g,''); const allData=Object.entries(c._allData||{}).filter(([k])=>!/(phone|mobile|contact)/i.test(k)).slice(0,4).map(([k,v])=>`${escapeHtml(k)}: ${escapeHtml(v||'-')}`).join(' | ');return `<tr><td>${index+1}</td><td>${allData||escapeHtml(c.name||'Unknown')}</td><td><a href="tel:${escapeHtml(cleanPhone)}" class="phone-link" onclick="event.preventDefault();makeCallFromPhone('${c.id}')">${escapeHtml(c.phone||'N/A')}</a></td><td><span class="status-badge status-${String(c.status||'Pending').replace(/ /g,'-')}">${escapeHtml(c.status||'Pending')}</span></td><td><button class="btn btn-call call-action" onclick="makeCallFromPhone('${c.id}')">📞 Call</button></td><td><button class="btn btn-response" onclick="openCallModal('${c.id}')">📝 Response</button></td></tr>`;}).join('');
+        }
+
+        // =============================================
+        // HISTORY
+        // =============================================
+
+        function renderHistory(){
+            const myContacts=getVisibleData(currentUser.id).filter(c=>c.callTime).sort((a,b)=>new Date(b.callTime)-new Date(a.callTime)).slice(0,100);
+            document.getElementById('historyCount').textContent=myContacts.length; const body=document.getElementById('historyBody');
+            if(!myContacts.length){body.innerHTML='<tr><td colspan="6" class="no-data">No history available</td></tr>';return;}
+            body.innerHTML=myContacts.map((c,i)=>{const info=Object.entries(c._allData||{}).filter(([k])=>!/(phone|mobile)/i.test(k)).slice(0,4).map(([k,v])=>`${escapeHtml(k)}: ${escapeHtml(v||'-')}`).join(' | ');return `<tr><td>${i+1}</td><td>${info||escapeHtml(c.name||'Unknown')}</td><td class="phone-cell">${escapeHtml(c.phone||'-')}</td><td><span class="status-badge status-${String(c.status||'Pending').replace(/ /g,'-')}">${escapeHtml(c.status||'Pending')}</span></td><td>${escapeHtml(c.response||'-')}</td><td>${c.callTime?new Date(c.callTime).toLocaleString():'-'}</td></tr>`;}).join('');
+        }
+
+        // =============================================
+        // PROFILE
+        // =============================================
+
+        function loadProfile() {
+            document.getElementById('profileId').textContent = currentUser.id;
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileEmail').textContent = currentUser.email || '-';
+            document.getElementById('profileRole').textContent = currentUser.role === 'admin' ? '👑 Admin' : (currentUser.role === 'subagent' ? '🧑‍💼 Sub-Agent' : '👤 Agent');
+
+            const levelNames = ['Top Level', 'Level 1', 'Level 2', 'Level 3'];
+            const level = currentUser.level || 0;
+            document.getElementById('profileLevel').textContent = levelNames[Math.min(level, 3)] || 'Level ' + level;
+
+            const myContacts = getVisibleData(currentUser.id);
+
+            document.getElementById('profileTotal').textContent = myContacts.length;
+            document.getElementById('profileCompleted').textContent = myContacts.filter(c => c.status === 'Completed' || c
+                .status === 'Called').length;
+            document.getElementById('profileInterested').textContent = myContacts.filter(c => c.status === 'Interested').length;
+        }
+
+        function changePassword(e) {
+            e.preventDefault();
+
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (current !== currentUser.password) {
+                alert('❌ Current password is incorrect!');
+                return false;
+            }
+
+            if (newPass !== confirm) {
+                alert('❌ New passwords do not match!');
+                return false;
+            }
+
+            if (newPass.length < 6) {
+                alert('❌ Password must be at least 6 characters!');
+                return false;
+            }
+
+            const user = agents.find(a => a.id === currentUser.id);
+            if (user) {
+                user.password = newPass;
+                saveUsers();
+                currentUser.password = newPass;
+                localStorage.setItem('callCurrentUser', JSON.stringify(currentUser));
+                alert('✅ Password updated successfully!');
+                document.getElementById('changePasswordForm').reset();
+            }
+
+            return false;
+        }
+
+
+        // =============================================
+        // MODERN HIERARCHY + REPORTS
+        // =============================================
+        function roleLabel(role){
+            return role === 'admin' ? '👑 Admin' : (role === 'agent' ? '👤 Agent' : '🧑‍💼 Sub-Agent');
+        }
+        function directChildren(userId){ return agents.filter(a => a.parent_id === userId); }
+        function renderTreeNode(user, seen=new Set()){
+            if(!user || seen.has(user.id)) return '';
+            seen.add(user.id);
+            const children = directChildren(user.id);
+            const assigned = allContacts.filter(c => c.assigned_to === user.id).length;
+            const calls = allContacts.filter(c => c.assigned_to === user.id && c.callTime).length;
+            return `<div class="tree-node">
+                <div class="tree-row">
+                    <span class="role-dot ${escapeHtml(user.role)}"></span>
+                    <span class="tree-name">${escapeHtml(user.name)}</span>
+                    <span style="font-size:11px;color:#64748b">${escapeHtml(roleLabel(user.role))} · ${escapeHtml(user.id)}</span>
+                    <span class="tree-meta">${assigned} assigned · ${calls} calls</span>
+                </div>
+                ${children.length ? `<div class="tree-children">${children.map(c=>renderTreeNode(c,seen)).join('')}</div>` : ''}
+            </div>`;
+        }
+        function loadHierarchy(){
+            if(!currentUser) return;
+            const tree=document.getElementById('hierarchyTree');
+            if(!tree) return;
+            const root=currentUser.role==='admin' ? agents.find(a=>a.role==='admin') : currentUser;
+            tree.innerHTML=root ? renderTreeNode(root) : '<div class="no-data">No hierarchy</div>';
+            const direct=getSubAgents(currentUser.id);
+            const cnt=document.getElementById('subAgentListCount'); if(cnt) cnt.textContent=direct.length;
+            const dc=document.getElementById('directTeamCount'); if(dc) dc.textContent=direct.length;
+            const snap=document.getElementById('teamSnapshot');
+            if(snap){
+                const ids=getTeamIds(currentUser.id), team=agents.filter(a=>ids.includes(a.id)&&a.id!==currentUser.id);
+                const scope=getVisibleData(currentUser.id);
+                snap.innerHTML=`<div style="display:grid;gap:10px"><div><b>${team.length}</b> team members</div><div><b>${scope.length}</b> visible records</div><div><b>${scope.filter(c=>c.callTime).length}</b> calls recorded</div><div><b>${scope.filter(c=>c.status==='Interested').length}</b> interested</div></div>`;
+            }
+        }
+        function getAssignableUsers(){
+            if(currentUser.role==='admin') return agents.filter(a=>a.role!=='admin');
+            if(currentUser.role==='agent') return getSubAgents(currentUser.id);
+            return [];
+        }
+        function canAssign(){ return currentUser && ['admin','agent'].includes(currentUser.role); }
+
+        function loadReports(){
+            if(!currentUser)return; const scope=getVisibleData(currentUser.id),calls=scope.filter(c=>c.callTime); const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
+            const rs=document.getElementById('reportScope'); if(rs)rs.textContent=currentUser.role==='admin'?'Entire organization':'Your work'; set('reportTotal',scope.length);set('reportCalls',calls.length);set('reportInterested',scope.filter(c=>c.status==='Interested').length);set('reportPending',scope.filter(c=>['Pending','Assigned','Call Back Later'].includes(c.status)).length);
+            const members=currentUser.role==='admin'?agents.filter(a=>a.role!=='admin'):getSubAgents(currentUser.id); const body=document.getElementById('reportTeamBody');
+            if(body)body.innerHTML=members.map(u=>{const rows=getVisibleData(u.id);return `<tr><td><b>${escapeHtml(u.name)}</b><br><small>${escapeHtml(u.id)}</small></td><td>${escapeHtml(roleLabel(u.role))}</td><td>${rows.length}</td><td>${rows.filter(c=>c.callTime).length}</td><td>${rows.filter(c=>c.status==='Interested').length}</td><td>${rows.filter(c=>c.status==='Not Answered').length}</td><td>${rows.filter(c=>['Pending','Assigned','Call Back Later'].includes(c.status)).length}</td></tr>`;}).join('')||'<tr><td colspan="7" class="no-data">No team data</td></tr>';
+            const headers=[...new Set(dataSets.flatMap(ds=>ds.headers||[]))].filter(h=>!['Status','Assigned To','Response','Notes','Call Time'].includes(h)); const allH=[...headers,'Status','Assigned To','Response','Notes','Call Time'];
+            const rh=document.getElementById('reportDetailHead'),rb=document.getElementById('reportDetailBody'); if(rh)rh.innerHTML='<tr>'+allH.map(h=>`<th>${escapeHtml(h)}</th>`).join('')+'</tr>'; if(rb)rb.innerHTML=calls.map(c=>'<tr>'+allH.map(h=>{let v=c._allData?.[h]??'';if(h==='Status')v=c.status||'';if(h==='Assigned To'){const a=agents.find(x=>x.id===c.assigned_to);v=a?.name||'Unassigned'}if(h==='Response')v=c.response||'';if(h==='Notes')v=c.notes||'';if(h==='Call Time')v=c.callTime?new Date(c.callTime).toLocaleString():'';return `<td>${escapeHtml(v)}</td>`}).join('')+'</tr>').join('')||`<tr><td colspan="${allH.length}" class="no-data">No call records</td></tr>`;
+        }
+        function reportRows(){
+            return getVisibleData(currentUser.id).filter(c=>c.callTime).map(c=>{const row={};[...new Set(dataSets.flatMap(ds=>ds.headers||[]))].forEach(h=>row[h]=c._allData?.[h]??'');const a=agents.find(x=>x.id===c.assigned_to);row.Status=c.status||'';row['Assigned To']=a?.name||'Unassigned';row.Response=c.response||'';row.Notes=c.notes||'';row['Call Time']=c.callTime?new Date(c.callTime).toLocaleString():'';row['Source File']=getDataset(c.dataset_id)?.fileName||'';return row;});
+        }
+        function exportWorkReportExcel(){
+            if(typeof XLSX==='undefined'){alert('Excel library is not loaded.');return;}
+            const rows=reportRows();
+            const summary=[['CALLFLOW WORK REPORT'],['Generated',new Date().toLocaleString()],['User',currentUser.name],['Role',roleLabel(currentUser.role)],['Scope',currentUser.role==='admin'?'Entire organization':(currentUser.role==='agent'?'Your team':'Your work')],['Total visible records',getVisibleData(currentUser.id).length],['Calls recorded',rows.length],['Interested',rows.filter(r=>r.Status==='Interested').length],['Pending',rows.filter(r=>['Pending','Assigned','Call Back Later'].includes(r.Status)).length]];
+            const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(summary),'Summary');
+            XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows.length?rows:[{'Message':'No call records'}]),'Detailed Work');
+            const team=getTeamIds(currentUser.id).map(id=>agents.find(a=>a.id===id)).filter(Boolean).map(u=>{const r=allContacts.filter(c=>c.assigned_to===u.id);return {'User ID':u.id,'Name':u.name,'Role':u.role,'Assigned':r.length,'Calls':r.filter(c=>c.callTime).length,'Interested':r.filter(c=>c.status==='Interested').length,'Not Answered':r.filter(c=>c.status==='Not Answered').length,'Pending':r.filter(c=>['Pending','Assigned','Call Back Later'].includes(c.status)).length}});
+            XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(team),'Team Performance');
+            XLSX.writeFile(wb,`CallFlow_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+        function exportWorkReportWord(){
+            const rows=reportRows(); const esc=escapeHtml;
+            const tableRows=rows.slice(0,1000).map(r=>`<tr>${Object.values(r).map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('');
+            const headers=rows.length?Object.keys(rows[0]):[...(excelHeaders||[]),'Status','Assigned To','Response','Notes','Call Time'];
+            const html=`<!doctype html><html><head><meta charset="utf-8"><title>CallFlow Work Report</title><style>body{font-family:Arial;padding:24px;color:#172033}h1{font-size:22px}p{color:#555}table{border-collapse:collapse;width:100%;font-size:9px}th,td{border:1px solid #ccc;padding:5px;text-align:left}th{background:#f1f3f8}</style></head><body><h1>CALLFLOW — Work Report</h1><p><b>User:</b> ${esc(currentUser.name)} &nbsp; <b>Role:</b> ${esc(roleLabel(currentUser.role))}<br><b>Generated:</b> ${esc(new Date().toLocaleString())}<br><b>Records:</b> ${rows.length}</p><table><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${tableRows||`<tr><td colspan="${headers.length}">No call records</td></tr>`}</tbody></table></body></html>`;
+            const blob=new Blob([html],{type:'application/msword'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`CallFlow_Report_${new Date().toISOString().slice(0,10)}.doc`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        }
+
+        // =============================================
+        // DATA MANAGEMENT (ADMIN ONLY)
+        // =============================================
+
+        function clearAllData() {
+            if (currentUser.role !== 'admin') {
+                alert('❌ Only Admin can clear data!');
+                return;
+            }
+
+            if (!confirm('⚠️ Are you sure you want to delete ALL data? This cannot be undone!')) return;
+            if (!confirm('⚠️ Really? All contacts and logs will be deleted!')) return;
+
+            allContacts = [];
+            excelHeaders = [];
+            uploadedFileName = '';
+            saveData();
+            refreshAll();
+            showStatus('🗑️ All data cleared', 'info');
+        }
+
+        function exportBackup(){
+            const data={datasets:dataSets,contacts:allContacts,users:agents,headers:excelHeaders,fileName:uploadedFileName,exported_at:new Date().toISOString(),version:'5.0-multifile'};
+            const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`CallFlow_Backup_${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+        }
+        function restoreBackup(event){
+            if(!currentUser||currentUser.role!=='admin'){alert('❌ Only Admin can restore backup!');return;}
+            const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(e){try{const data=JSON.parse(e.target.result);if(!data.datasets&&!data.contacts)throw new Error('Invalid');if(!confirm('Restore backup? Current data will be replaced.'))return;if(data.datasets){dataSets=data.datasets;}else{dataSets=[{id:uid('ds'),fileName:data.fileName||'Restored Data',uploadedBy:'admin',uploadedAt:new Date().toISOString(),headers:data.headers||[],contacts:data.contacts||[]}];}if(data.users){agents=data.users;saveUsers();}normalizeDatasets();saveData();refreshAll();showStatus('✅ Backup restored successfully','success');}catch(err){alert('❌ Invalid backup file!');} };reader.readAsText(file);event.target.value='';
+        }
+        // =============================================
+        // AUTO REFRESH
+        // =============================================
+
+        setInterval(() => {
+            loadData();
+            loadUsers();
+            if (currentUser) {
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab) {
+                    const tabId = activeTab.id.replace('tab-', '');
+                    if (tabId === 'dashboard') { loadDashboard();
+                        loadTeamPerformance(); }
+                    if (tabId === 'upload') updatePreview();
+                    if (tabId === 'assign') loadAssignData();
+                    if (tabId === 'subagents') loadSubAgentsList();
+                    if (tabId === 'calls') renderCalls();
+                    if (tabId === 'history') renderHistory();
+                    if (tabId === 'reports') loadReports();
+                    if (tabId === 'profile') loadProfile();
+                }
+            }
+        }, 30000);
+
+        // =============================================
+        // START
+        // =============================================
+
+        // Bind navigation handlers before starting the app.
+        // Without this call the tabs are visible but clicks do nothing.
+        setupApp();
+        init();
+
+        console.log('📞 Hierarchical Call Management System Loaded!');
+        console.log('👤 User:', currentUser ? currentUser.name : 'Not logged in');
+        console.log('📊 Hierarchy Level:', currentUser ? currentUser.level : 'N/A');
+        console.log('🔑 Admin login: admin / admin123. Create all Agents from the Admin account.');
+        console.log('📤 Upload data and assign to sub-agents!');
+        console.log('👥 Each agent can manage their own sub-agents!');
+    </script>
+</body>
+</html>
